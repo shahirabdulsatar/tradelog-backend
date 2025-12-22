@@ -220,6 +220,56 @@ app.use('*', (req, res) => {
   });
 });
 
+// OAuth redirect endpoint for Universal Links
+app.get('/plaid/redirect', (req, res) => {
+  console.log('OAuth redirect received:', req.query);
+
+  // Generate a simple redirect page that will open the app
+  const redirectHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>TradeLog - Redirecting...</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body style="font-family: -apple-system, system-ui; text-align: center; padding: 40px;">
+      <h2>🔗 Connection Complete</h2>
+      <p>Redirecting you back to TradeLog...</p>
+      <script>
+        // Try to redirect back to the app
+        setTimeout(() => {
+          window.location = 'tradelog://oauth/complete?' + new URLSearchParams(location.search).toString();
+        }, 1000);
+      </script>
+    </body>
+    </html>
+  `;
+
+  res.send(redirectHtml);
+});
+
+// Serve apple-app-site-association for Universal Links
+app.get('/.well-known/apple-app-site-association', (req, res) => {
+  const association = {
+    applinks: {
+      details: [
+        {
+          appIDs: ["6QW5L7ECF9.shahirabdulsatar.TradeLog"],
+          components: [
+            {
+              "/": "/plaid/*",
+              comment: "Matches any URL path starting with /plaid/"
+            }
+          ]
+        }
+      ]
+    }
+  };
+
+  res.set('Content-Type', 'application/json');
+  res.json(association);
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
