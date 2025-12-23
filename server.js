@@ -41,7 +41,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Create link token for Plaid Link
+// Create link token for Plaid Link (main endpoint)
 app.post('/api/plaid/create_link_token', async (req, res) => {
   console.log('Creating link token...');
 
@@ -62,6 +62,40 @@ app.post('/api/plaid/create_link_token', async (req, res) => {
   try {
     const response = await client.linkTokenCreate(request);
     console.log('Link token created successfully');
+    res.json({
+      link_token: response.data.link_token,
+      expiration: response.data.expiration
+    });
+  } catch (error) {
+    console.error('Link token creation failed:', error.response?.data || error.message);
+    res.status(500).json({
+      error: error.message,
+      details: error.response?.data || 'Failed to create link token'
+    });
+  }
+});
+
+// Alternative endpoint with hyphen (in case iOS is calling this)
+app.post('/api/plaid/create-link-token', async (req, res) => {
+  console.log('Creating link token via alternative endpoint...');
+
+  const request = {
+    user: {
+      client_user_id: req.body.user_id || 'tradelog_user_' + Date.now()
+    },
+    client_name: "TradeLog",
+    products: ['investments'],
+    country_codes: ['US'],
+    language: 'en',
+    investments: {
+      allow_unverified_crypto_wallets: false,
+      allow_manual_entry: false
+    }
+  };
+
+  try {
+    const response = await client.linkTokenCreate(request);
+    console.log('Link token created successfully (alternative endpoint)');
     res.json({
       link_token: response.data.link_token,
       expiration: response.data.expiration
@@ -213,6 +247,7 @@ app.use('*', (req, res) => {
       'GET /',
       'GET /health',
       'POST /api/plaid/create_link_token',
+      'POST /api/plaid/create-link-token',
       'POST /api/plaid/exchange_public_token',
       'POST /api/plaid/investments/holdings',
       'POST /api/plaid/investments/transactions'
