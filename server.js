@@ -53,6 +53,7 @@ app.post('/api/plaid/create_link_token', async (req, res) => {
     products: ['investments'],
     country_codes: ['US'],
     language: 'en',
+    redirect_uri: 'https://tradelog-backend-production.up.railway.app/plaid/redirect',
     investments: {
       allow_unverified_crypto_wallets: false,
       allow_manual_entry: false
@@ -87,6 +88,7 @@ app.post('/api/plaid/create-link-token', async (req, res) => {
     products: ['investments'],
     country_codes: ['US'],
     language: 'en',
+    redirect_uri: 'https://tradelog-backend-production.up.railway.app/plaid/redirect',
     investments: {
       allow_unverified_crypto_wallets: false,
       allow_manual_entry: false
